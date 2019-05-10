@@ -5,6 +5,7 @@ import urllib.request
 import urllib.error
 import locale
 import pyttsx3
+from sys import platform
 from playsound import playsound
 from mtranslate import translate
 
@@ -59,8 +60,6 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	iMsWait = int(fMinDiff * 60000)
 	if fMinDiff < 0.5:
 		iMsWait = int(60000 - iMsWait)
-	#print("Diff: " + str(fMinDiff))
-	#print("Wait: " + str(iMsWait))
 
 	# Alarm with int values
 	iBgHigh = int(jsonStatus['settings']['thresholds']['bgHigh'])
@@ -167,14 +166,26 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	# Speech engine
 	engine = ''
 	if bSpeech == True and bWait == True and iMin == 0:
-		engine = pyttsx3.init()
-		engine.say(sDisplay.replace('.', ','))
-		engine.runAndWait()
+		if platform == str("linux") or platform == str("linux2"):
+			from google_speech import Speech
+			Speech(sDisplay.replace('.', ','), sLanguageDetect).play()
+		else:
+			engine = pyttsx3.init()
+			engine.say(sDisplay.replace('.', ','))
+			engine.runAndWait()
+		#if platform == str("win32") or platform == str("win64"): => WIN
+		#if platform == str("darwin"): => MACOS
 
 	if bSpeech == True and bWait == False:
-		engine = pyttsx3.init()
-		engine.say(sDisplay.replace('.', ','))
-		engine.runAndWait()
+		if platform == str("linux") or platform == str("linux2"):	
+			from google_speech import Speech	
+			Speech(sDisplay.replace('.', ','), sLanguageDetect).play()
+		else:
+			engine = pyttsx3.init()
+			engine.say(sDisplay.replace('.', ','))
+			engine.runAndWait()
+		#if platform == str("win32") or platform == str("win64"): => WIN
+		#if platform == str("darwin"): => MACOS
 
 	# Alerts
 	if bAlert == True and bWait == False:
@@ -183,6 +194,9 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	if bAlert == True and bWait == True and iMin == 0:
 		if iSgv <= iBgLow or iSgv >= iBgHigh or iSgv <= iBgTargetBottom or iSgv >= iBgTargetTop:
 			playsound(sUrl + '/audio/alarm.mp3')
+
+	#print("Diff: " + str(fMinDiff))
+	#print("Wait: " + str(iMsWait))
 
 	if bWait == True:
 		time.sleep(int(iMsWait * 0.001))

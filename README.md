@@ -5,6 +5,7 @@ A glucose python module for Nightscout
 * `pip install pyttsx3`
 * `pip install playsound`
 * `pip install translate`
+* `pip install google-speech`
 * `pip install locale`
 
 ## Example
