@@ -168,7 +168,8 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	if bSpeech == True and bWait == True and iMin == 0:
 		if platform == str("linux") or platform == str("linux2"):
 			from google_speech import Speech
-			Speech(sDisplay.replace('.', ','), sLanguageDetect).play()
+			engine = Speech(sDisplay.replace('.', ','), sLanguageDetect)
+			engine.play()
 		else:
 			engine = pyttsx3.init()
 			engine.say(sDisplay.replace('.', ','))
@@ -179,7 +180,8 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	if bSpeech == True and bWait == False:
 		if platform == str("linux") or platform == str("linux2"):	
 			from google_speech import Speech	
-			Speech(sDisplay.replace('.', ','), sLanguageDetect).play()
+			engine = Speech(sDisplay.replace('.', ','), sLanguageDetect)
+			engine.play()
 		else:
 			engine = pyttsx3.init()
 			engine.say(sDisplay.replace('.', ','))
@@ -194,9 +196,6 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	if bAlert == True and bWait == True and iMin == 0:
 		if iSgv <= iBgLow or iSgv >= iBgHigh or iSgv <= iBgTargetBottom or iSgv >= iBgTargetTop:
 			playsound(sUrl + '/audio/alarm.mp3')
-
-	#print("Diff: " + str(fMinDiff))
-	#print("Wait: " + str(iMsWait))
 
 	if bWait == True:
 		time.sleep(int(iMsWait * 0.001))
