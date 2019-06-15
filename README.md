@@ -26,8 +26,8 @@ while 1:
 * String: Nightscout url
 * `https://[...].herokuapp.com` = URL
 #### iUnits
-Integer: Units of glucose
-0=Auto, 1=mg/dl, 2=mmol
+* Integer: Units of glucose
+* 0=Auto, 1=mg/dl, 2=mmol
 #### iDisplay
 * Integer: Option of print glucose data
 * `0` = All, `1`= Glucose, `2` = Direction, `3` = Delta, `4` = Minutes
