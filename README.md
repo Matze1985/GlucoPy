@@ -1,11 +1,15 @@
 # GlucoPy
 A glucose python module for Nightscout
 
-## Install modules
+## Modules
+### Windows
 * `pip install pyttsx3`
-* `pip install playsound`
-* `pip install translate`
+### Linux
 * `pip install google-speech`
+### Alert option
+* `pip install playsound`
+### Speech option
+* `pip install translate`
 * `pip install locale`
 
 ## Example
@@ -14,13 +18,16 @@ A glucose python module for Nightscout
 import nightscout as ns
 
 while 1:
-  ns.run('https://[...].herokuapp.com', 0, True, True, True) 
+  ns.run('https://[...].herokuapp.com', 0, 0, True, True, True) 
   ```
 ## Keywords
 ### Run()
 #### sUrl
 * String: Nightscout url
 * `https://[...].herokuapp.com` = URL
+#### iUnits
+Integer: Units of glucose
+0=Auto, 1=mg/dl, 2=mmol
 #### iDisplay
 * Integer: Option of print glucose data
 * `0` = All, `1`= Glucose, `2` = Direction, `3` = Delta, `4` = Minutes
@@ -31,5 +38,5 @@ while 1:
 * Boolean: Speech option, with wait every zero min.
 * `True` or `False`
 #### bWait
-* Boolean: Waiting for glucose update in a loop
+* Boolean: Wait for glucose update
 * `True` or `False`

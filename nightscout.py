@@ -3,23 +3,19 @@ import sys
 import time
 import urllib.request
 import urllib.error
-import locale
-import pyttsx3
-from sys import platform
-from playsound import playsound
-from mtranslate import translate
 
-def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
+def run(sUrl, iUnits=0, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	"""
-	Run()
+	Run(sUrl, iDisplay, bAlert, bSpeech, bWait)
     --------------------------------------------------------------------------------------
     Keyword arguments:
 	--------------------------------------------------------------------------------------
     sUrl 		-- 	String 	-- Nightscout url 
+	iUnits		--  Integer	-- 0=Auto, 1=mg/dl, 2=mmol
     iDisplay 	-- 	Integer -- Option of print glucose data (0=All, 1=Glucose, 2=Direction, 3=Delta, 4=Minutes)
 	bAlert		-- 	Boolean -- Alarm option (True or False)
 	bSpeech		-- 	Boolean -- Speech option, with wait every zero min. (True or False)
-	bWait		-- 	Boolean	-- Waiting time with a loop (True or False)
+	bWait		-- 	Boolean	-- Wait for glucose update (True or False)
     --------------------------------------------------------------------------------------
     Example:	while 1:
 					ns.run('https://account.herokuapp.com', 0, True, True, True)
@@ -47,19 +43,17 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	iLastDate = int(jsonEntries[1]['date'])
 	iServerTimeEpoch = int(jsonStatus['serverTimeEpoch'])
 
-	# Calculate and strings
+	# Calculate 
 	iMsServerTimeEpochDate = int(iServerTimeEpoch - iDate)
 	iMsInterval = int(iDate - iLastDate)
-	iMinInterval = int(round(iMsInterval / 60000 + 1, 0))
+	iMinInterval = int(round(iMsInterval / 60000, 0))
 	iMinSecondInterval = int(iMinInterval * 2)
 	iMin = int(iMsServerTimeEpochDate / 60000)
 
-	# Calculate waiting time for glucose update
+	# Check glucose every minute
 	fMin = float(iMsServerTimeEpochDate / 60000)
-	fMinDiff = float(str(fMin)[1:])
-	iMsWait = int(fMinDiff * 60000)
-	if fMinDiff < 0.5:
-		iMsWait = int(60000 - iMsWait)
+	fMinDiff = float(fMin - iMin)
+	fSeconds = float(60 - fMinDiff * 36)
 
 	# Alarm with int values
 	iBgHigh = int(jsonStatus['settings']['thresholds']['bgHigh'])
@@ -75,15 +69,25 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	if str('ok') not in sStatus:
 		print(str('Status: [' + sStatus + ']'))
 
-    # Check if sUnits: mmol
+    # iUnits
 	i_fSgv = ''
 	i_fLastSgv = ''
-	if sUnits == str('mmol'):
-		i_fSgv = round(float(iSgv * 0.0555), 1)
-		i_fLastSgv = round(float(iLastSgv * 0.0555), 1)
-	else:
-		i_fSgv = iSgv
-		i_fLastSgv = iLastSgv
+	fCalcSgvMmol = round(float(iSgv * 0.0555), 1)
+	fCalcLastSgvMmol = round(float(iLastSgv * 0.0555), 1)
+
+	if iUnits == 0:
+		if sUnits == str('mmol'):
+			i_fSgv = fCalcSgvMmol
+			i_fLastSgv = round(float(iLastSgv * 0.0555), 1)
+		else:
+			i_fSgv = iSgv
+			i_fLastSgv = iLastSgv
+	if iUnits == 1:
+			i_fSgv = iSgv
+			i_fLastSgv = iLastSgv
+	if iUnits == 2:
+			i_fSgv = fCalcSgvMmol
+			i_fLastSgv = fCalcLastSgvMmol
 
     # Calculate delta
 	sTmpDelta = ''
@@ -131,11 +135,6 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 		sTrend = str("⇊")
 		sSpeechTrend = str('Tendency: sinks quickly')
 
-	# Detect local language
-	sTmpLang = str(locale.getdefaultlocale())[:4]
-	sLanguageDetect = sTmpLang[-2:]
-	sSpeechTrend = translate(sSpeechTrend, sLanguageDetect, 'auto')
-
     # Notification
 	sMin = str(iMin) + str(' min')
 	sDelta = sDelta + str(i_fDelta)
@@ -165,47 +164,65 @@ def run(sUrl, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 
 	# Speech engine
 	engine = ''
-	if bSpeech == True and bWait == True and iMin == 0:
-		if platform == str("linux") or platform == str("linux2"):
-			from google_speech import Speech
-			engine = Speech(sDisplay.replace('.', ','), sLanguageDetect)
-			engine.play()
-		else:
-			engine = pyttsx3.init()
-			engine.say(sDisplay.replace('.', ','))
-			engine.runAndWait()
-		#if platform == str("win32") or platform == str("win64"): => WIN
-		#if platform == str("darwin"): => MACOS
+	if bSpeech == True:
+		import locale
+		from mtranslate import translate
+		# Detect local language
+		sTmpLang = str(locale.getdefaultlocale())[:4]
+		sLanguageDetect = sTmpLang[-2:]
+		sSpeechTrend = translate(sSpeechTrend, sLanguageDetect, 'auto')
 
-	if bSpeech == True and bWait == False:
-		if platform == str("linux") or platform == str("linux2"):	
-			from google_speech import Speech	
-			engine = Speech(sDisplay.replace('.', ','), sLanguageDetect)
-			engine.play()
-		else:
-			engine = pyttsx3.init()
-			engine.say(sDisplay.replace('.', ','))
-			engine.runAndWait()
-		#if platform == str("win32") or platform == str("win64"): => WIN
-		#if platform == str("darwin"): => MACOS
+		if bWait == True and iMin == 0:
+			from sys import platform
+			# Linux
+			if platform == str("linux") or platform == str("linux2"):
+				from google_speech import Speech
+				engine = Speech(sDisplay.replace('.', ','), sLanguageDetect)
+				engine.play()
+
+			# Windows
+			if platform == str("win32") or platform == str("win64"):
+				import pyttsx3
+				engine = pyttsx3.init()
+				engine.say(sDisplay.replace('.', ','))
+				engine.runAndWait()
+			#if platform == str("darwin"): => MACOS
+			
+		if bWait == False:
+			# Linux
+			if platform == str("linux") or platform == str("linux2"):
+				from google_speech import Speech
+				engine = Speech(sDisplay.replace('.', ','), sLanguageDetect)
+				engine.play()
+
+			# Windows
+			if platform == str("win32") or platform == str("win64"):
+				import pyttsx3
+				engine = pyttsx3.init()
+				engine.say(sDisplay.replace('.', ','))
+				engine.runAndWait()
+			#if platform == str("darwin"): => MACOS
 
 	# Alerts
-	if bAlert == True and bWait == False:
-		if iSgv <= iBgLow or iSgv >= iBgHigh or iSgv <= iBgTargetBottom or iSgv >= iBgTargetTop:
-			playsound(sUrl + '/audio/alarm.mp3')
-	if bAlert == True and bWait == True and iMin == 0:
-		if iSgv <= iBgLow or iSgv >= iBgHigh or iSgv <= iBgTargetBottom or iSgv >= iBgTargetTop:
-			playsound(sUrl + '/audio/alarm.mp3')
-
+	if bAlert == True:
+		from playsound import playsound
+		if bWait == False:
+			if iSgv <= iBgLow or iSgv >= iBgHigh or iSgv <= iBgTargetBottom or iSgv >= iBgTargetTop:
+				playsound(sUrl + '/audio/alarm.mp3')
+		if bWait == True and iMin == 0:
+			if iSgv <= iBgLow or iSgv >= iBgHigh or iSgv <= iBgTargetBottom or iSgv >= iBgTargetTop:
+				playsound(sUrl + '/audio/alarm.mp3')
+	
 	if bWait == True:
-		time.sleep(int(iMsWait * 0.001))
-		
 	# Check of glucose after every interval for new updates
-	if sMin.endswith(str(iMinInterval)[-1:]) or sMin.endswith(str(iMinSecondInterval)[-1:]):
-		for i in range(10):
-			time.sleep(int(1))
-			if iMin == 0:
-				break
+		if str(iMin).endswith(str(iMinInterval)[-1:]) or str(iMin).endswith(str(iMinSecondInterval)[-1:]):
+			for i in range(10):
+				time.sleep(1)
+				if iMin == 0:
+					time.sleep(fSeconds)
+					break
+		else:		
+			time.sleep(fSeconds)
 
 	# Close url
 	urlEntries.close()
