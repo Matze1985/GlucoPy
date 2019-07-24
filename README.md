@@ -25,7 +25,7 @@ while 1:
 #### sUrl
 * String: Nightscout url
 * `https://[...].herokuapp.com` = URL
-#### iUnits
+#### iUnit
 * Integer: Units of glucose
 * 0=Auto, 1=mg/dl, 2=mmol
 #### iDisplay
