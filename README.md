@@ -1,5 +1,6 @@
 # GlucoPy
-A glucose python module for Nightscout
+* A glucose python module for Nightscout
+* A terminal glucose checker
 
 ## Modules
 ### Windows
@@ -26,7 +27,7 @@ while 1:
 * String: Nightscout url
 * `https://[...].herokuapp.com` = URL
 #### iUnit
-* Integer: Units of glucose
+* Integer: Unit of glucose
 * 0=Auto, 1=mg/dl, 2=mmol
 #### iDisplay
 * Integer: Option of print glucose data

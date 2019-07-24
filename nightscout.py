@@ -1,8 +1,9 @@
-import json
+﻿import json
 import sys
 import time
 import urllib.request
 import urllib.error
+from sys import platform
 
 def run(sUrl, iUnit=0, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	"""
@@ -170,10 +171,9 @@ def run(sUrl, iUnit=0, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 		# Detect local language
 		sTmpLang = str(locale.getdefaultlocale())[:4]
 		sLanguageDetect = sTmpLang[-2:]
-		sSpeechTrend = translate(sSpeechTrend, sLanguageDetect, 'auto')
+		sDisplay = translate(sDisplay, sLanguageDetect, 'auto')
 
 		if bWait == True and iMin == 0:
-			from sys import platform
 			# Linux
 			if platform == str("linux") or platform == str("linux2"):
 				from google_speech import Speech
