@@ -1,17 +1,17 @@
-﻿import json
+import json
 import sys
 import time
 import urllib.request
 import urllib.error
 
-def run(sUrl, iUnits=0, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
+def run(sUrl, iUnit=0, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	"""
 	Run(sUrl, iDisplay, bAlert, bSpeech, bWait)
     --------------------------------------------------------------------------------------
     Keyword arguments:
 	--------------------------------------------------------------------------------------
     sUrl 		-- 	String 	-- Nightscout url 
-	iUnits		--  Integer	-- 0=Auto, 1=mg/dl, 2=mmol
+	iUnit		--  Integer	-- 0=Auto, 1=mg/dl, 2=mmol
     iDisplay 	-- 	Integer -- Option of print glucose data (0=All, 1=Glucose, 2=Direction, 3=Delta, 4=Minutes)
 	bAlert		-- 	Boolean -- Alarm option (True or False)
 	bSpeech		-- 	Boolean -- Speech option, with wait every zero min. (True or False)
@@ -69,23 +69,23 @@ def run(sUrl, iUnits=0, iDisplay=0, bAlert=False, bSpeech=False, bWait=False):
 	if str('ok') not in sStatus:
 		print(str('Status: [' + sStatus + ']'))
 
-    # iUnits
+    # iUnit
 	i_fSgv = ''
 	i_fLastSgv = ''
 	fCalcSgvMmol = round(float(iSgv * 0.0555), 1)
 	fCalcLastSgvMmol = round(float(iLastSgv * 0.0555), 1)
 
-	if iUnits == 0:
+	if iUnit == 0:
 		if sUnits == str('mmol'):
 			i_fSgv = fCalcSgvMmol
 			i_fLastSgv = round(float(iLastSgv * 0.0555), 1)
 		else:
 			i_fSgv = iSgv
 			i_fLastSgv = iLastSgv
-	if iUnits == 1:
+	if iUnit == 1:
 			i_fSgv = iSgv
 			i_fLastSgv = iLastSgv
-	if iUnits == 2:
+	if iUnit == 2:
 			i_fSgv = fCalcSgvMmol
 			i_fLastSgv = fCalcLastSgvMmol
 
